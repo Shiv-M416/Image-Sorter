@@ -7,8 +7,12 @@ st.set_page_config(page_title="Personal AI Photo Sorter", page_icon="📁", layo
 st.title("📁 Personal AI Photo Sorter")
 st.markdown("Upload your photos below and let AI sort them into your exact categories!")
 
-# Secure input for your Gemini API key
-api_key = st.text_input("Enter your Gemini API Key:", type="password")
+# Automatically load API key from Streamlit Secrets if available, otherwise show input box
+api_key = None
+if "GEMINI_API_KEY" in st.secrets:
+    api_key = st.secrets["GEMINI_API_KEY"]
+else:
+    api_key = st.text_input("Enter your Gemini API key:", type="password")
 
 if not api_key:
     st.warning("Please enter your Gemini API key above to unlock the app.")
@@ -33,10 +37,10 @@ if uploaded_files:
                 st.image(image, caption=uploaded_file.name, width=150)
                 
             with col2:
-                with st.spinner(f"Analyzing {uploaded_file.name}..."):
+                with st.spinner(f"Analyzing {uploaded_file.name} ..."):
                     try:
                         prompt = """
-                        Analyze this image carefully. You are an expert classifier for a personal gallery. 
+                        Analyze this image carefully. You are an expert classifier for a personal gallery.
                         Classify this image into EXACTLY ONE of these primary categories:
                         1. Vehicles (Sedans, SUVs, Sports Cars, Bikes, etc.)
                         2. Firearms (Assault Rifles, SMGs, Pistols, Revolvers, Shotguns, etc.)
@@ -47,18 +51,18 @@ if uploaded_files:
                         7. General / Other (Screenshots, random notes, scenery, or anything else)
 
                         Provide your response in this strict layout:
-                        - **Category:** [Choose one from the list above]
-                        - **Specific Details:** [Name the exact vehicle model, firearm type, armor piece, dish, or item seen]
-                        - **Reason:** [1 brief sentence]
+                        * **Category:** [Choose one from the list above]
+                        * **Specific Details:** [Name the exact vehicle model, firearm type, armor piece, dish, or item seen]
+                        * **Reason:** [1 brief sentence]
                         """
                         
                         response = client.models.generate_content(
-                            model="gemini-2.5-flash",
-                            contents=[image, prompt]
+                            model='gemini-2.5-flash',
+                            contents=[image, prompt],
                         )
                         
                         st.markdown(response.text)
                     except Exception as e:
                         st.error(f"Error processing image: {e}")
             st.markdown("---")
-          
+            
